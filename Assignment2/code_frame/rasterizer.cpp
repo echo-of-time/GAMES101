@@ -43,6 +43,25 @@ auto to_vec4(const Eigen::Vector3f& v3, float w = 1.0f)
 static bool insideTriangle(int x, int y, const Vector3f* _v)
 {   
     // TODO : Implement this function to check if the point (x, y) is inside the triangle represented by _v[0], _v[1], _v[2]
+    Eigen::Vector3i p0(_v[0].x(), _v[0].y(), _v[0].z());
+    Eigen::Vector3i p1(_v[1].x(), _v[1].y(), _v[1].z());
+    Eigen::Vector3i p2(_v[2].x(), _v[2].y(), _v[2].z());
+    Eigen::Vector3i p(x, y, 0);
+
+    Eigen::Vector3i p0p1 = p1 - p0;
+    Eigen::Vector3i p0p = p - p0;
+    Eigen::Vector3i p1p2 = p2 - p1;
+    Eigen::Vector3i p1p = p - p1;
+    Eigen::Vector3i p2p0 = p0 - p2;
+    Eigen::Vector3i p2p = p - p2;
+
+    Eigen::Vector3i temp1 = p0p.cross(p0p1);
+    Eigen::Vector3i temp2 = p1p.cross(p1p2);
+    Eigen::Vector3i temp3 = p2p.cross(p2p0);
+    if ((temp1[2] < 0) && (temp2[2] < 0) && (temp3[2] < 0)) {
+        return 1;
+    }
+    return 0;
 }
 
 static std::tuple<float, float, float> computeBarycentric2D(float x, float y, const Vector3f* v)
@@ -146,29 +165,6 @@ float mymin(float a, float b, float c)
     }
 }
 
-static bool insideTriangle(int x, int y, const Triangle& t)
-{
-    Eigen::Vector3i p0(t.v[0].x(), t.v[0].y(), t.v[0].z());
-    Eigen::Vector3i p1(t.v[1].x(), t.v[1].y(), t.v[1].z());
-    Eigen::Vector3i p2(t.v[2].x(), t.v[2].y(), t.v[2].z());
-    Eigen::Vector3i p(x, y, 0);
-
-    Eigen::Vector3i p0p1 = p1 - p0;
-    Eigen::Vector3i p0p = p - p0;
-    Eigen::Vector3i p1p2 = p2 - p1;
-    Eigen::Vector3i p1p = p - p1;
-    Eigen::Vector3i p2p0 = p0 - p2;
-    Eigen::Vector3i p2p = p - p2;
-
-    Eigen::Vector3i temp1 = p0p.cross(p0p1);
-    Eigen::Vector3i temp2 = p1p.cross(p1p2);
-    Eigen::Vector3i temp3 = p2p.cross(p2p0);
-    if ((temp1[2] < 0) && (temp2[2] < 0) && (temp3[2] < 0)) {
-        return 1;
-    }
-    return 0;
-}
-
 //Screen space rasterization
 void rst::rasterizer::rasterize_triangle(const Triangle& t) {
     auto v = t.toVector4();
@@ -184,14 +180,14 @@ void rst::rasterizer::rasterize_triangle(const Triangle& t) {
 
     for (int x = x_min; x < x_max; ++x){
         for (int y = y_min; y < y_max; ++y) {
-            if (insideTriangle(x+0.5, y+0.5, t)){
+            if (insideTriangle(x+0.5, y+0.5, t.v)){
                 auto[alpha, beta, gamma] = computeBarycentric2D(x, y, t.v);
                 float w_reciprocal = 1.0/(alpha / v[0].w() + beta / v[1].w() + gamma / v[2].w());
                 float z_interpolated = alpha * v[0].z() / v[0].w() + beta * v[1].z() / v[1].w() + gamma * v[2].z() / v[2].w();
                 z_interpolated *= w_reciprocal;
 
                 int index = get_index(x, y);
-                if (z_interpolated < depth_buf[index] - 0.001) {
+                if (z_interpolated < depth_buf[index] - 0.0001) {
                     Eigen::Vector3f p(x, y, z_interpolated);
                     set_pixel(p, t.getColor());
                     depth_buf[index] = z_interpolated;

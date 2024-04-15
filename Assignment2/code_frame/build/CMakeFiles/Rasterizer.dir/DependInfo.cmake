@@ -1,19 +1,16 @@
+
+# Consider dependencies only in project.
+set(CMAKE_DEPENDS_IN_PROJECT_ONLY OFF)
+
 # The set of languages for which implicit dependencies are needed:
 set(CMAKE_DEPENDS_LANGUAGES
-  "CXX"
   )
-# The set of files for implicit dependencies of each language:
-set(CMAKE_DEPENDS_CHECK_CXX
-  "/home/cs18/Desktop/git_space/GAMES101/Assignment2/code_frame/Triangle.cpp" "/home/cs18/Desktop/git_space/GAMES101/Assignment2/code_frame/build/CMakeFiles/Rasterizer.dir/Triangle.cpp.o"
-  "/home/cs18/Desktop/git_space/GAMES101/Assignment2/code_frame/main.cpp" "/home/cs18/Desktop/git_space/GAMES101/Assignment2/code_frame/build/CMakeFiles/Rasterizer.dir/main.cpp.o"
-  "/home/cs18/Desktop/git_space/GAMES101/Assignment2/code_frame/rasterizer.cpp" "/home/cs18/Desktop/git_space/GAMES101/Assignment2/code_frame/build/CMakeFiles/Rasterizer.dir/rasterizer.cpp.o"
-  )
-set(CMAKE_CXX_COMPILER_ID "GNU")
 
-# The include file search paths:
-set(CMAKE_CXX_TARGET_INCLUDE_PATH
-  "/usr/local/include"
-  "/usr/include/opencv"
+# The set of dependency files which are needed:
+set(CMAKE_DEPENDS_DEPENDENCY_FILES
+  "D:/AA_Study_Info/GAMES101/PA/GAMES101/Assignment2/code_frame/Triangle.cpp" "CMakeFiles/Rasterizer.dir/Triangle.cpp.obj" "gcc" "CMakeFiles/Rasterizer.dir/Triangle.cpp.obj.d"
+  "D:/AA_Study_Info/GAMES101/PA/GAMES101/Assignment2/code_frame/main.cpp" "CMakeFiles/Rasterizer.dir/main.cpp.obj" "gcc" "CMakeFiles/Rasterizer.dir/main.cpp.obj.d"
+  "D:/AA_Study_Info/GAMES101/PA/GAMES101/Assignment2/code_frame/rasterizer.cpp" "CMakeFiles/Rasterizer.dir/rasterizer.cpp.obj" "gcc" "CMakeFiles/Rasterizer.dir/rasterizer.cpp.obj.d"
   )
 
 # Targets to which this target links.
