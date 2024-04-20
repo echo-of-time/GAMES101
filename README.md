@@ -2,7 +2,7 @@
 **Instructor : Lingqi Yan, UC Santa Barbara<br>**
 **Course Website : https://sites.cs.ucsb.edu/~lingqi/teaching/games101.html<br>**
 
-    本课程将全面而系统地介绍现代计算机图形z的四大组成部分：  
+    本课程将全面而系统地介绍现代计算机图形的四大组成部分：  
     （1）光栅化成像
     （2）几何表示
     （3）光的传播理论
