@@ -57,7 +57,7 @@ Eigen::Matrix4f get_projection_matrix(float eye_fov, float aspect_ratio, float z
     Eigen::Matrix4f matrix_presp2ortho, matrix_ortho, matrix_s_ortho, matrix_t_ortho;
     matrix_presp2ortho << zNear, 0, 0, 0,
                           0, zNear, 0, 0,
-                          0, zNear+zFar, -zNear*zFar, 0,
+                          0, 0, zNear+zFar, -zNear*zFar,
                           0, 0, -1, 0;
 
     matrix_t_ortho << 1, 0, 0, -(xLeft + xRight)/2,
@@ -66,7 +66,7 @@ Eigen::Matrix4f get_projection_matrix(float eye_fov, float aspect_ratio, float z
                       0, 0, 0, 1;
     matrix_s_ortho << 2/(xRight - xLeft), 0, 0, 0,
                       0, 2/(yTop - yBottom), 0, 0,
-                      0, 0, 2/(zNear - zFar), 0,
+                      0, 0, 2/(zFar - zNear), 0,
                       0, 0, 0, 1;
     matrix_ortho = matrix_s_ortho * matrix_t_ortho;
     projection = matrix_ortho * matrix_presp2ortho * projection;

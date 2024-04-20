@@ -8,6 +8,9 @@
 #include "Texture.hpp"
 #include "OBJ_Loader.h"
 
+/**
+ * return view matrix : translate camera to origin and rotage it up at Y, look at -Z.
+*/
 Eigen::Matrix4f get_view_matrix(Eigen::Vector3f eye_pos)
 {
     Eigen::Matrix4f view = Eigen::Matrix4f::Identity();
@@ -23,6 +26,9 @@ Eigen::Matrix4f get_view_matrix(Eigen::Vector3f eye_pos)
     return view;
 }
 
+/**
+ * return model matrix : Find a good place and arrange models.
+*/
 Eigen::Matrix4f get_model_matrix(float angle)
 {
     Eigen::Matrix4f rotation;
@@ -33,9 +39,9 @@ Eigen::Matrix4f get_model_matrix(float angle)
                 0, 0, 0, 1;
 
     Eigen::Matrix4f scale;
-    scale << 2.5, 0, 0, 0,
-              0, 2.5, 0, 0,
-              0, 0, 2.5, 0,
+    scale << 3, 0, 0, 0,
+              0, 3, 0, 0,
+              0, 0, 3, 0,
               0, 0, 0, 1;
 
     Eigen::Matrix4f translate;
@@ -47,6 +53,14 @@ Eigen::Matrix4f get_model_matrix(float angle)
     return translate * rotation * scale;
 }
 
+/**
+ * Return projection matrix: 
+ * Orthographic:
+ * map a cuboid [l, r] x [b, t] x [f, n] to the “canonical (正则、规范、标准)” cube [-1, 1]3
+ * Perspective:
+ * First “squish” the frustum into a cuboid (n -> n, f -> f)
+ * the Do orthographic projection.
+*/
 Eigen::Matrix4f get_projection_matrix(float eye_fov, float aspect_ratio, float zNear, float zFar)
 {
     // TODO: Use the same projection matrix from the previous assignments
@@ -61,7 +75,7 @@ Eigen::Matrix4f get_projection_matrix(float eye_fov, float aspect_ratio, float z
     Eigen::Matrix4f matrix_presp2ortho, matrix_ortho, matrix_s_ortho, matrix_t_ortho;
     matrix_presp2ortho << zNear, 0, 0, 0,
                           0, zNear, 0, 0,
-                          0, zNear+zFar, -zNear*zFar, 0,
+                          0, 0, zNear+zFar, -zNear*zFar,
                           0, 0, -1, 0;
 
     matrix_t_ortho << 1, 0, 0, -(xLeft + xRight)/2,
@@ -70,7 +84,7 @@ Eigen::Matrix4f get_projection_matrix(float eye_fov, float aspect_ratio, float z
                       0, 0, 0, 1;
     matrix_s_ortho << 2/(xRight - xLeft), 0, 0, 0,
                       0, 2/(yTop - yBottom), 0, 0,
-                      0, 0, 2/(zNear - zFar), 0,
+                      0, 0, -2/(zNear - zFar), 0,
                       0, 0, 0, 1;
     matrix_ortho = matrix_s_ortho * matrix_t_ortho;
     projection = matrix_ortho * matrix_presp2ortho * projection;

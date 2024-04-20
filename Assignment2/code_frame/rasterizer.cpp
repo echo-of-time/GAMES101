@@ -187,7 +187,7 @@ void rst::rasterizer::rasterize_triangle(const Triangle& t) {
                 z_interpolated *= w_reciprocal;
 
                 int index = get_index(x, y);
-                if (z_interpolated < depth_buf[index] - 0.0001) {
+                if (z_interpolated < depth_buf[index] ) {
                     Eigen::Vector3f p(x, y, z_interpolated);
                     set_pixel(p, t.getColor());
                     depth_buf[index] = z_interpolated;
