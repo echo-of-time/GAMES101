@@ -158,21 +158,32 @@ Eigen::Vector3f texture_fragment_shader(const fragment_shader_payload& payload)
 
 Eigen::Vector3f phong_fragment_shader(const fragment_shader_payload& payload)
 {
+    // ka : ambient coefficient
     Eigen::Vector3f ka = Eigen::Vector3f(0.005, 0.005, 0.005);
+    // kd : diffusion coefficient(color)
     Eigen::Vector3f kd = payload.color;
+    // ks : specular coefficient
     Eigen::Vector3f ks = Eigen::Vector3f(0.7937, 0.7937, 0.7937);
 
     auto l1 = light{{20, 20, 20}, {500, 500, 500}};
     auto l2 = light{{-20, 20, 0}, {500, 500, 500}};
 
+    // light source set
     std::vector<light> lights = {l1, l2};
+
+    // ambient light intensity
     Eigen::Vector3f amb_light_intensity{10, 10, 10};
+    
+    // viewer point
     Eigen::Vector3f eye_pos{0, 0, 10};
 
-    float p = 150;
+    float p = 1500;
 
     Eigen::Vector3f color = payload.color;
+
+    // shading point
     Eigen::Vector3f point = payload.view_pos;
+    // surface normal vector
     Eigen::Vector3f normal = payload.normal;
 
     Eigen::Vector3f result_color = {0, 0, 0};
@@ -180,7 +191,22 @@ Eigen::Vector3f phong_fragment_shader(const fragment_shader_payload& payload)
     {
         // TODO: For each light source in the code, calculate what the *ambient*, *diffuse*, and *specular* 
         // components are. Then, accumulate that result on the *result_color* object.
-        
+        // Ld=kd(I/r^2)max(0, nÆl) , Ls=ks(I/r^2)max(0, cos↵)^p=ks(I/r^2)max(0, nÆh)^p, La=ka*Ia
+
+        auto I = light.intensity;
+
+        float r = (light.position - point).norm();
+
+        // Vector3f
+        auto n = normal.normalized(); // n = Surface normal vector
+        auto l = (light.position - point).normalized(); // l = Light direction vector
+        auto v = (eye_pos - point).normalized(); // v = Viewer directtion vector
+        auto h = (l + v).normalized(); // h = bisector
+
+        Eigen::Vector3f ambient = ka.cwiseProduct(amb_light_intensity);
+        Eigen::Vector3f diffuse = kd.cwiseProduct(I / std::pow(r, 2)) * std::max(0.0f, n.dot(l));
+        Eigen::Vector3f specular = ks.cwiseProduct(I / std::pow(r, 2)) * std::pow(std::max(0.0f, n.dot(h)), p);
+        result_color += (ambient + diffuse + specular);
     }
 
     return result_color * 255.f;

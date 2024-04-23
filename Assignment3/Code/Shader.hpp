@@ -7,7 +7,10 @@
 #include <eigen3/Eigen/Eigen>
 #include "Texture.hpp"
 
-
+/**
+ * 片元着色器 The fragment shader is a crucial stage in the graphics rendering pipeline
+ * responsible for determining the final color and appearance of each pixel (or fragment) in the rendered image.
+ */
 struct fragment_shader_payload
 {
     fragment_shader_payload()
