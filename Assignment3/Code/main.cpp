@@ -96,6 +96,9 @@ Eigen::Vector3f vertex_shader(const vertex_shader_payload& payload)
     return payload.position;
 }
 
+/**
+ * Use normal shader.
+*/
 Eigen::Vector3f normal_fragment_shader(const fragment_shader_payload& payload)
 {
     Eigen::Vector3f return_color = (payload.normal.head<3>().normalized() + Eigen::Vector3f(1.0f, 1.0f, 1.0f)) / 2.f;
@@ -122,7 +125,7 @@ Eigen::Vector3f texture_fragment_shader(const fragment_shader_payload& payload)
     if (payload.texture)
     {
         // TODO: Get the texture value at the texture coordinates of the current fragment
-
+        return_color += payload.texture->getColor(payload.tex_coords.x(), payload.tex_coords.y());
     }
     Eigen::Vector3f texture_color;
     texture_color << return_color.x(), return_color.y(), return_color.z();
@@ -150,12 +153,28 @@ Eigen::Vector3f texture_fragment_shader(const fragment_shader_payload& payload)
     {
         // TODO: For each light source in the code, calculate what the *ambient*, *diffuse*, and *specular* 
         // components are. Then, accumulate that result on the *result_color* object.
+        auto I = light.intensity;
 
+        float r = (light.position - point).norm();
+
+        // Vector3f
+        auto n = normal.normalized(); // n = Surface normal vector
+        auto l = (light.position - point).normalized(); // l = Light direction vector
+        auto v = (eye_pos - point).normalized(); // v = Viewer directtion vector
+        auto h = (l + v).normalized(); // h = bisector
+
+        Eigen::Vector3f ambient = ka.cwiseProduct(amb_light_intensity);
+        Eigen::Vector3f diffuse = kd.cwiseProduct(I / std::pow(r, 2)) * std::max(0.0f, n.dot(l));
+        Eigen::Vector3f specular = ks.cwiseProduct(I / std::pow(r, 2)) * std::pow(std::max(0.0f, n.dot(h)), p);
+        result_color += (ambient + diffuse + specular);
     }
 
     return result_color * 255.f;
 }
 
+/**
+ * Using Blinn-Phong Reflectance model : combine ambient, diffusion and specular.
+*/
 Eigen::Vector3f phong_fragment_shader(const fragment_shader_payload& payload)
 {
     // ka : ambient coefficient
