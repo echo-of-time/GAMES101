@@ -30,10 +30,48 @@ void naive_bezier(const std::vector<cv::Point2f> &points, cv::Mat &window)
     }
 }
 
+/**
+ * Divide the segment between two points with a ratio t.
+ * @param p1 The first point.
+ * @param p2 The second point.
+ * @param t The ratio. 
+ * t is in the range of [0, 1] 
+ * and when t = 0, the new point is located at p1.
+ */
+cv::Point2f divideSegment(cv::Point2f p1, cv::Point2f p2, float t) 
+{
+    return cv::Point2f(p1.x + (p2.x - p1.x) * t, p1.y + (p2.y - p1.y) * t);
+}
+
+/**
+ * Use de Casteljau's algorithm to calculate the point on the Bezier curve.
+ */
 cv::Point2f recursive_bezier(const std::vector<cv::Point2f> &control_points, float t) 
 {
     // TODO: Implement de Casteljau's algorithm
-    return cv::Point2f();
+    /**
+     * Step of de Casteljau's algorithm
+     * 1. Think about the the sequence of control points p0, p1,...,pn,
+     *  and connect the adjacent points to form a segment.
+     * 2. Subdivide the segment with ratio t:(1-t), 
+     *  and get the new points of division.
+     * 3. Use the new points sequence as new control points, 
+     *  the size of which decrease one.
+     * 4. If the control points only contain one points, return the point
+     *  or back to the step 1 and pass the new control points sequence.
+     */
+    if (control_points.size() == 1) 
+    {
+        return control_points[0];
+    }
+
+    std::vector<cv::Point2f> control_points_new;
+    for(int i = 0; i < control_points.size() - 1; i++) {
+        control_points_new.push_back(
+            divideSegment(control_points[i], control_points[i + 1], t));
+    }
+    
+    return recursive_bezier(control_points_new, t);
 
 }
 
@@ -41,7 +79,10 @@ void bezier(const std::vector<cv::Point2f> &control_points, cv::Mat &window)
 {
     // TODO: Iterate through all t = 0 to t = 1 with small steps, and call de Casteljau's 
     // recursive Bezier algorithm.
-
+    for (double t = 0; t <= 1.0; t += 0.001) {
+        auto point = recursive_bezier(control_points, t);
+        window.at<cv::Vec3b>(point.y, point.x)= cv::Vec3b(255, 255, 255);
+    }
 }
 
 int main() 
@@ -62,8 +103,8 @@ int main()
 
         if (control_points.size() == 4) 
         {
-            naive_bezier(control_points, window);
-            //   bezier(control_points, window);
+            // naive_bezier(control_points, window);
+              bezier(control_points, window);
 
             cv::imshow("Bezier Curve", window);
             cv::imwrite("my_bezier_curve.png", window);
@@ -76,5 +117,5 @@ int main()
         key = cv::waitKey(20);
     }
 
-return 0;
+    return 0;
 }
