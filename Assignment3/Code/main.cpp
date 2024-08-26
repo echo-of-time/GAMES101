@@ -265,7 +265,21 @@ Eigen::Vector3f displacement_fragment_shader(const fragment_shader_payload& payl
     // Vector ln = (-dU, -dV, 1)
     // Position p = p + kn * n * h(u,v)
     // Normal n = normalize(TBN * ln)
+    auto u = payload.tex_coords.x();
+    auto v = payload.tex_coords.y();
+    auto w = payload.texture->width;
+    auto h = payload.texture->height;
 
+    auto n = normal;
+    Vector3f t = Vector3f(n.x() * n.y() / sqrt(n.x() * n.x() + n.z() * n.z()), sqrt(n.x() * n.x() + n.z() * n.z()), n.z() * n.y() / sqrt(n.x() * n.x() + n.z() * n.z()));
+    auto b = n.cross(t);
+    Matrix3f TBN;
+    TBN << t, b, n;
+    auto dU = kh * kn * (payload.texture->getColor(u+1.0/w, v).norm() - payload.texture->getColor(u, v).norm());
+    auto dV = kh * kn * (payload.texture->getColor(u, v+1.0/h).norm() - payload.texture->getColor(u, v).norm());
+    auto ln = Vector3f(-dU, -dV, 1);
+    point = point + kn * n * payload.texture->getColor(u, v).norm();
+    normal = (TBN * ln).normalized();
 
     Eigen::Vector3f result_color = {0, 0, 0};
 
@@ -274,6 +288,20 @@ Eigen::Vector3f displacement_fragment_shader(const fragment_shader_payload& payl
         // TODO: For each light source in the code, calculate what the *ambient*, *diffuse*, and *specular* 
         // components are. Then, accumulate that result on the *result_color* object.
 
+        auto I = light.intensity;
+
+        float r = (light.position - point).norm();
+
+        // Vector3f
+        auto n = normal.normalized(); // n = Surface normal vector
+        auto l = (light.position - point).normalized(); // l = Light direction vector
+        auto v = (eye_pos - point).normalized(); // v = Viewer directtion vector
+        auto h = (l + v).normalized(); // h = bisector
+
+        Eigen::Vector3f ambient = ka.cwiseProduct(amb_light_intensity);
+        Eigen::Vector3f diffuse = kd.cwiseProduct(I / std::pow(r, 2)) * std::max(0.0f, n.dot(l));
+        Eigen::Vector3f specular = ks.cwiseProduct(I / std::pow(r, 2)) * std::pow(std::max(0.0f, n.dot(h)), p);
+        result_color += (ambient + diffuse + specular);
 
     }
 
@@ -399,7 +427,7 @@ int main(int argc, const char** argv)
         }
         else if (argc == 3 && std::string(argv[2]) == "displacement")
         {
-            std::cout << "Rasterizing using the bump shader\n";
+            std::cout << "Rasterizing using the displacement shader\n";
             active_shader = displacement_fragment_shader;
         }
     }
