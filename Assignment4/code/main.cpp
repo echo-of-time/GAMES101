@@ -75,13 +75,46 @@ cv::Point2f recursive_bezier(const std::vector<cv::Point2f> &control_points, flo
 
 }
 
+/**
+ * antialiasing for one point in the window.
+ * calculate the average color of 8 points adjacent to the point and itself.
+ */
+void convolve(cv::Point &point, cv::Mat &window) {
+    cv::Vec3i newColor = cv::Vec3i(0, 0, 0);
+    int count = 0;
+
+    for (int i = -1; i <= 1; i++) {
+        for (int j = -1; j <= 1; j++) {
+            int newY = point.y + i;
+            int newX = point.x + j;
+
+            // 边界检查
+            if (newY >= 0 && newY < window.rows && newX >= 0 && newX < window.cols) {
+                newColor += window.at<cv::Vec3b>(newY, newX);
+                count++;
+            }
+        }
+    }
+
+    // 计算平均颜色
+    newColor /= count;
+    window.at<cv::Vec3b>(point.y, point.x) = cv::Vec3b(newColor[0], newColor[1], newColor[2]);
+}
+
 void bezier(const std::vector<cv::Point2f> &control_points, cv::Mat &window) 
 {
     // TODO: Iterate through all t = 0 to t = 1 with small steps, and call de Casteljau's 
     // recursive Bezier algorithm.
     for (double t = 0; t <= 1.0; t += 0.001) {
         auto point = recursive_bezier(control_points, t);
-        window.at<cv::Vec3b>(point.y, point.x)= cv::Vec3b(255, 255, 255);
+        window.at<cv::Vec3b>(point.y, point.x) = cv::Vec3b(198, 230, 80);
+    }
+    // anti-aliasing
+    for (int row = 0; row < window.rows; row++) {
+        for (int col = 0; col < window.cols; col++) {
+            cv::Point point = cv::Point(col, row);
+            convolve(point, window);
+        }
     }
 }
 
@@ -98,7 +131,7 @@ int main()
     {
         for (auto &point : control_points) 
         {
-            cv::circle(window, point, 3, {255, 255, 255}, 3);
+            cv::circle(window, point, 1, {255, 255, 255}, 2);
         }
 
         if (control_points.size() == 4) 
